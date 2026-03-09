@@ -1,6 +1,6 @@
 # MkDocs base configuration that other conf files will inherit
 
-site_name: Percona Binlog Server Documentation
+site_name: Percona Binary Log Server documentation
 site_description: Documentation
 site_author: Percona LLC
 copyright: >-
@@ -11,7 +11,8 @@ edit_uri: edit/main/docs/
 
 use_directory_urls: false
 
-# Theme setup
+# Theme setup. For a finished Percona product look, replace logo and favicon
+# with Percona branding (e.g. assets/percona-logo.svg) when available.
 theme:
   name: material
   logo: assets/mysql-mark.svg
@@ -137,8 +138,26 @@ extra:
   analytics:
     provider: google
     property: G-J4J70BNH0G
+  # Version switcher for DBAs: when using mike for multi-version deploys, the header shows a version dropdown.
+  # Deploy with: mike deploy --push 0.1.0 latest; then the switcher lets users pick docs by product version.
+  version:
+    provider: mike
+    default: latest
 
 nav:
   - Home: index.md
+  - Install Percona Binary Log Server: install.md
+  - Build Percona Binary Log Server From Source: build-from-source.md
+  - Get Started With Percona Binary Log Server: get-started.md
+  - Core behavior: operational-behavior-reference.md
+  - Operations: operations.md
+  - Using with Percona Operators: use-with-operators.md
+  - Reference:
+    - Command Reference: command-reference.md
+    - Configuration Reference: configuration-reference.md
+    - Storage Reference: storage-reference.md
+    - Glossary: glossary.md
+    - FAQ: faq.md
+    - Copyright and licensing information: copyright-and-licensing-information.md
   - get-help.md
 

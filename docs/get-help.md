@@ -19,7 +19,7 @@ We understand your challenges when managing complex database environments. That'
 
 | Service                    | Description                                                                                                                                                           |
 |----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 24/7 Expert Support        | Our dedicated team of database experts is available 24/7 to assist you with any database issues. We provide flexible support plans tailored to your specific needs.   |
+| Always-on Expert Support   | Our dedicated team of database experts is available twenty-four hours a day, seven days a week to assist you with any database issues. We provide flexible support plans tailored to your specific needs. |
 | Hands-On Database Management | Our managed services team can take over the day-to-day management of your database infrastructure, freeing up your time to focus on other priorities.               |
 | Expert Consulting          | Our experienced consultants provide guidance on database topics like architecture design, migration planning, performance optimization, and security best practices.  |
 | Comprehensive Training     | Our training programs help your team develop skills to manage databases effectively, offering virtual and in-person courses.                                          |
