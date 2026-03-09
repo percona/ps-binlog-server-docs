@@ -3,13 +3,11 @@
 site_name: Percona Binlog Server Documentation
 site_description: Documentation
 site_author: Percona LLC
-
+copyright: >-
+  <a href="https://www.percona.com/about">Percona LLC</a> and its affiliates &copy; 2026 — <a href="#" onclick="Osano.cm.showDrawer('osano-cm-dom-info-dialog-open')">Cookie Preferences</a>
 repo_name: percona/ps-binlog-server-docs
 repo_url: https://github.com/percona/ps-binlog-server-docs
 edit_uri: edit/main/docs/
-
-#features:
-# - content.tabs.link
 
 use_directory_urls: false
 
@@ -24,7 +22,7 @@ theme:
   icon:
     edit: material/file-edit-outline
     view: material/file-eye-outline
-  
+
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -49,11 +47,20 @@ theme:
 
   features:
     - search.highlight
+    - search.share
+    - search.suggest
     - navigation.top
+    - navigation.tracking 
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.indexes
+    - content.tooltips
     - content.tabs.link
 #    - content.action.edit
     - content.action.view
     - content.code.copy
+    - content.code.annotate
+    - toc.follow 
 
 extra_css:
   - https://unicons.iconscout.com/release/v3.0.3/css/line.css
@@ -87,7 +94,7 @@ markdown_extensions:
   pymdownx.details: {}
   pymdownx.mark: {}
   pymdownx.smartsymbols: {}
-  pymdownx.tabbed:
+  pymdownx.tabbed: 
       {alternate_style: true}
   pymdownx.tilde: {}
   pymdownx.superfences: {}
@@ -114,7 +121,7 @@ plugins:
     git-revision-date: {}
     git-committers:
       enabled: !ENV [CI, false]
-      repository: percona/proxysql-admin-tool-doc
+      repository: percona/ps-binlog-server-docs
       branch: main
     meta-descriptions:
       export_csv: false
@@ -122,33 +129,16 @@ plugins:
       enable_checks: false
       min_length: 50
       max_length: 160
-#  - htmlproofer # Uncomment to check links - but extends build time significantly
     macros:
         include_yaml:
         - 'variables.yml' # Use in markdown as '{{ VAR }}'
-# exclude: # Don't process these files
-#      glob:
-#         - file.md
-#    with-pdf: # https://github.com/orzih/mkdocs-with-pdf
-#          output_path: '_pdf/PerconaProxySQLAdmintool-2.4.4.pdf'
-#          cover_title: 'Percona ProxySQL Admin tool Documentation'
-#          cover_subtitle:
-#          author: 'Percona Technical Documentation Team'
-#          cover_logo: docs/_static/Percona_Logo_Color.png
-#          debug_html: false
-#          custom_template_path: _resource/templates
-#          enabled_if_env: ENABLE_PDF_EXPORT
-#    mike:
-#      version_selector: true
-#      css_dir: css
-#      javascript_dir: js
-#      canonical_version: null
-
 extra:
-  version:
-    provider: mike
+#Google Analytics configuration 
+  analytics:
+    provider: google
+    property: G-J4J70BNH0G
 
 nav:
   - Home: index.md
- 
-# - Version Selector: "../"
+  - get-help.md
+
