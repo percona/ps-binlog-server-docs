@@ -1,0 +1,6 @@
+[console_scripts]
+mkdocs-versioning = mkversion.__main__:main
+
+[mkdocs.plugins]
+mkdocs-versioning = mkversion.entry:Entry
+

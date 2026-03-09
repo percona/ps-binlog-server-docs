@@ -1,0 +1,2 @@
+[mkdocs.plugins]
+meta-descriptions = mkdocs_meta_descriptions_plugin.plugin:MetaDescription

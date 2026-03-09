@@ -1,0 +1,1 @@
+mkdocs_bootstrap_tables_plugin

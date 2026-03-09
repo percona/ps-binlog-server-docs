@@ -1,0 +1,150 @@
+Metadata-Version: 2.4
+Name: mkdocs-meta-descriptions-plugin
+Version: 4.1.0
+Summary: Generate meta descriptions from the first paragraphs in your MkDocs pages
+Home-page: https://github.com/prcr/mkdocs-meta-descriptions-plugin
+Author: Paulo Ribeiro
+Author-email: paulo@diffraction.pt
+License: MIT
+Keywords: mkdocs meta description seo paragraph
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Requires-Python: >=3
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: mkdocs>=1.1
+Requires-Dist: pymdown-extensions>=7.0
+Requires-Dist: beautifulsoup4>=4.9
+Requires-Dist: packaging
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# mkdocs-meta-descriptions-plugin
+
+[![CI/CD](https://github.com/prcr/mkdocs-meta-descriptions-plugin/actions/workflows/test-build-deploy.yml/badge.svg)](https://github.com/prcr/mkdocs-meta-descriptions-plugin/actions/workflows/test-build-deploy.yml)
+[![Codacy](https://app.codacy.com/project/badge/Grade/08bc759a053f475091318f53ea67bd05)](https://app.codacy.com/gh/prcr/mkdocs-meta-descriptions-plugin/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=prcr/mkdocs-meta-descriptions-plugin&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/08bc759a053f475091318f53ea67bd05)](https://app.codacy.com/gh/prcr/mkdocs-meta-descriptions-plugin/dashboard?utm_source=github.com&utm_medium=referral&utm_content=prcr/mkdocs-meta-descriptions-plugin&utm_campaign=Badge_Coverage)
+[![PyPI](https://img.shields.io/pypi/dm/mkdocs-meta-descriptions-plugin?label=PyPI)](https://pypi.org/project/mkdocs-meta-descriptions-plugin/)
+
+Use this MkDocs plugin to automatically generate meta descriptions for your pages using the first paragraph of each page. This is useful if you start each page with a short introduction or summary that can be reused as the meta description.
+
+![Meta description obtained from first paragraph of the page](https://raw.githubusercontent.com/prcr/mkdocs-meta-descriptions-plugin/main/images/readme-example.png)
+
+For each page, the plugin:
+
+1.  Checks that the page doesn't already have a meta description.
+
+    The plugin **doesn't change** any meta descriptions defined explicitly on the [page meta-data](https://www.mkdocs.org/user-guide/writing-your-docs/#meta-data).
+
+2.  Tries to find the first paragraph above any `<h2>` to `<h6>` headings.
+
+    The plugin only searches for the first paragraph until the start of the first section to ensure that the content is from the "introductory" part of the page.
+
+3.  Sets the meta description of the page to the plain text context of the paragraph, stripped of HTML tags.
+
+If the page doesn't have a meta description defined manually by you nor automatically by the plugin, MkDocs sets the meta description of the page to the value of your [`site_description`](https://www.mkdocs.org/user-guide/configuration/#site_description) as a fallback.
+
+## Setting up and using the plugin
+
+> ⚠️ **Important:** to use this plugin, you must either [customize your existing theme](https://www.mkdocs.org/user-guide/styling-your-docs/#overriding-template-blocks) to include the value of [`page.meta.description`](https://www.mkdocs.org/user-guide/custom-themes/#pagemeta) in the HTML element `<meta name="description" content="...">`, or use an [MkDocs theme](https://github.com/mkdocs/mkdocs/wiki/MkDocs-Themes) that already does this by default. I recommend using the excellent [Material theme](https://github.com/squidfunk/mkdocs-material).
+
+To set up and use the plugin:
+
+1.  Install the plugin using pip:
+
+    ```bash
+    pip install mkdocs-meta-descriptions-plugin
+    ```
+
+    Depending on your project, you may also need to add the plugin as a dependency on your `requirements.txt` file.
+
+2.  Activate the plugin in your `mkdocs.yml`:
+
+    ```yaml
+    plugins:
+      - search
+      - meta-descriptions
+    ```
+
+    > **Note:** If you didn't have a `plugins` declaration in your `mkdocs.yml` file before this step, you'll likely also want to add the `search` plugin. This is because MkDocs enables the `search` plugin by default when there is no `plugins` declaration, but now you have to enable it explicitly.
+
+## Configuring the plugin
+
+Use the following options to configure the behavior of the plugin:
+
+```yaml
+plugins:
+  - meta-descriptions:
+      export_csv: false
+      quiet: false
+      enable_checks: false
+      min_length: 50
+      max_length: 160
+      trim: false
+      fallback_if_short: false
+```
+
+### `export_csv`
+
+If `true`, the plugin exports the meta descriptions of all Markdown pages to the CSV file `<site_dir>/meta-descriptions.csv`. The default is `false`.
+
+This is useful to review and keep track of all the meta descriptions for your pages, especially if you're maintaining a big site.
+
+### `quiet`
+
+If `true`, the plugin logs messages of level `INFO` using the level `DEBUG` instead. The default is `false`.
+
+Enable this option to have a cleaner MkDocs console output. You can still see all logs by running MkDocs with the `--verbose` flag.
+
+### `enable_checks`
+
+If `true`, the plugin outputs a warning for each page that will have an empty or default meta description, as well as for each meta description shorter than `min_length` or longer than `max_length`. The default is `false`.
+
+Enable this option if you want to make sure that all pages have a meta description and that each meta description follows general SEO best practices.
+
+### `min_length`
+
+Minimum number of characters that each meta description should have. The default is 50 characters, based on [these general recommendations](https://moz.com/learn/seo/meta-description).
+
+Make sure that you set `enable_checks: true` for this option to have an effect.
+
+### `max_length`
+
+Maximum number of characters that each meta description should have. The default is 160 characters, based on [these general recommendations](https://moz.com/learn/seo/meta-description).
+
+Make sure that you set `enable_checks: true` or `trim: true` for this option to have an effect.
+
+### `trim`
+
+If `true`, the plugin trims meta descriptions coming from the first paragraph of the pages to include at most `max_length` characters. The default is `false`.
+
+Note that this option doesn't change any meta descriptions defined explicitly on the [page meta-data](https://www.mkdocs.org/user-guide/writing-your-docs/#meta-data).
+
+### `fallback_if_short`
+
+If `true`, the plugin uses the value of `site_description` as the meta description when the first paragraph is shorter than `min_length`. The default is `false`.
+
+Note that this option doesn't change any meta descriptions defined explicitly on the [page meta-data](https://www.mkdocs.org/user-guide/writing-your-docs/#meta-data).
+
+## See also
+
+Read more about [using MkDocs plugins](http://www.mkdocs.org/user-guide/plugins/).

@@ -1,0 +1,154 @@
+# MkDocs base configuration that other conf files will inherit
+
+site_name: Percona Binlog Server Documentation
+site_description: Documentation
+site_author: Percona LLC
+
+repo_name: percona/ps-binlog-server-docs
+repo_url: https://github.com/percona/ps-binlog-server-docs
+edit_uri: edit/main/docs/
+
+#features:
+# - content.tabs.link
+
+use_directory_urls: false
+
+# Theme setup
+theme:
+  name: material
+  logo: assets/mysql-mark.svg
+  favicon: assets/mysql-fav.svg
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    edit: material/file-edit-outline
+    view: material/file-eye-outline
+  
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Color theme set to Automatic. Click to change
+    - media: "(prefers-color-scheme: light)"
+      scheme: percona-light
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Color theme set to Light Mode. Click to change
+    - media: "(prefers-color-scheme: dark)"
+      scheme: percona-dark
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Color theme set to Dark Mode. Click to change
+
+# Theme features
+
+  features:
+    - search.highlight
+    - navigation.top
+    - content.tabs.link
+#    - content.action.edit
+    - content.action.view
+    - content.code.copy
+
+extra_css:
+  - https://unicons.iconscout.com/release/v3.0.3/css/line.css
+  - https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css
+  - css/design.css
+  - css/osano.css
+  - css/extra.css
+  - css/nocopy.css
+  - css/mysql.css
+  - css/rating.css
+
+extra_javascript:
+  - js/promptremover.js
+  - js/consent.js
+  - js/rating.js
+
+markdown_extensions:
+  attr_list: {}
+  toc:
+    permalink: true
+    title: On this page
+    toc_depth: 2
+  md_in_html: {}
+  admonition: {}
+  footnotes: {}
+  def_list: {} # https://michelf.ca/projects/php-markdown/extra/#def-list
+  meta: {}
+  md_in_html: {}
+  smarty:
+      {smart_angled_quotes: true}
+  pymdownx.details: {}
+  pymdownx.mark: {}
+  pymdownx.smartsymbols: {}
+  pymdownx.tabbed:
+      {alternate_style: true}
+  pymdownx.tilde: {}
+  pymdownx.superfences: {}
+  pymdownx.tabbed:
+    alternate_style: true
+  pymdownx.tasklist:
+    custom_checkbox: true
+  pymdownx.snippets:
+      base_path: ["snippets"]
+#      auto_append:
+#        - services-banner.md
+  pymdownx.highlight:
+    use_pygments: true
+  pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+    options:
+      custom_icons:
+        - _resource/.icons
+
+plugins:
+    search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+    git-revision-date: {}
+    git-committers:
+      enabled: !ENV [CI, false]
+      repository: percona/proxysql-admin-tool-doc
+      branch: main
+    meta-descriptions:
+      export_csv: false
+      quiet: false
+      enable_checks: false
+      min_length: 50
+      max_length: 160
+#  - htmlproofer # Uncomment to check links - but extends build time significantly
+    macros:
+        include_yaml:
+        - 'variables.yml' # Use in markdown as '{{ VAR }}'
+# exclude: # Don't process these files
+#      glob:
+#         - file.md
+#    with-pdf: # https://github.com/orzih/mkdocs-with-pdf
+#          output_path: '_pdf/PerconaProxySQLAdmintool-2.4.4.pdf'
+#          cover_title: 'Percona ProxySQL Admin tool Documentation'
+#          cover_subtitle:
+#          author: 'Percona Technical Documentation Team'
+#          cover_logo: docs/_static/Percona_Logo_Color.png
+#          debug_html: false
+#          custom_template_path: _resource/templates
+#          enabled_if_env: ENABLE_PDF_EXPORT
+#    mike:
+#      version_selector: true
+#      css_dir: css
+#      javascript_dir: js
+#      canonical_version: null
+
+extra:
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+ 
+# - Version Selector: "../"

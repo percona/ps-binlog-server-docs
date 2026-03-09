@@ -1,0 +1,17 @@
+Markdown
+mkdocs
+mkdocs-versioning
+mkdocs-macros-plugin
+mkdocs-exclude
+markdown-include
+mkdocs-material
+mkdocs-with-pdf
+mkdocs-material-extensions
+mkdocs-bootstrap-tables-plugin
+mkdocs-section-index
+mkdocs-htmlproofer-plugin
+mkdocs-meta-descriptions-plugin
+mike
+mkdocs-print-site-plugin
+mkdocs-git-committers-plugin-2
+mkdocs-git-revision-date-plugin
