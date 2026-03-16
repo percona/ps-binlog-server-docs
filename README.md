@@ -48,7 +48,7 @@ If you find a bug in the documentation or have a feature request for the tool it
 
 ## License
 
-The documentation in the repository is licensed under the [GPL-2.0 license](https://www.google.com/search?q=LICENSE), consistent with the Percona Binary Log Server software.
+Percona Binary Log Server documentation is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
 
 ## Resources
 
