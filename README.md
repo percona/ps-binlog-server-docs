@@ -6,12 +6,12 @@ The Percona Binary Log Server is a command-line utility that serves as an enhanc
 
 ## Table of Contents
 
-* [About the Project](https://www.google.com/search?q=%23about-the-project)
-* [How to Use These Docs](https://www.google.com/search?q=%23how-to-use-these-docs)
-* [Documentation Structure](https://www.google.com/search?q=%23documentation-structure)
-* [Contributing](https://www.google.com/search?q=%23contributing)
-* [License](https://www.google.com/search?q=%23license)
-* [Resources](https://www.google.com/search?q=%23resources)
+* [About the Project](#about-the-project)
+* [How to Use These Docs](#how-to-use-these-docs)
+* [Documentation Structure](#documentation-structure)
+* [Contributing](#contributing)
+* [License](#license)
+* [Resources](#resources)
 
 ## About the Project
 
@@ -28,7 +28,7 @@ The repository serves as the central hub for user guides, operational manuals, a
 
 If you are looking for the software itself, please visit the [main repository](https://github.com/Percona-Lab/percona-binlog-server).
 
-The documentation is typically written in Markdown. You can browse the files directly here on GitHub or follow the links in our [Resources](https://www.google.com/search?q=%23resources) section for rendered versions.
+The documentation is typically written in Markdown. You can browse the files directly here on GitHub or follow the links in our [Resources](#resources) section for rendered versions.
 
 ## Documentation Structure
 
@@ -44,7 +44,7 @@ We encourage contributions to improve the quality of our documentation! To contr
 
 Please review the [Contributing Guide](contributing.md) and the [Code of Conduct](code-of-conduct.md) before submitting changes.
 
-If you find a bug in the documentation or have a feature request for the tool itself, please use the [Jira issue tracker](https://www.google.com/search?q=https://jira.percona.com) or the [GitHub Issues](https://github.com/Percona-Lab/percona-binlog-server/issues) page.
+If you find a bug in the documentation or have a feature request for the tool itself, please use the [Jira issue tracker](https://jira.percona.com) or the [GitHub Issues](https://github.com/Percona-Lab/percona-binlog-server/issues) page.
 
 ## License
 
@@ -53,8 +53,8 @@ Percona Binary Log Server documentation is licensed under a [Creative Commons At
 ## Resources
 
 * Main Repository: [Percona-Lab/percona-binlog-server](https://github.com/Percona-Lab/percona-binlog-server)
-* Community Forum: [Percona Community Forum](https://www.google.com/search?q=https://forums.percona.com/)
-* Blog Posts: [Percona Database Performance Blog](https://www.google.com/search?q=https://www.percona.com/blog)
+* Community Forum: [Percona Community Forum](https://forums.percona.com/)
+* Blog Posts: [Percona Database Performance Blog](https://www.percona.com/blog)
 
 
-*For more information about Percona's open-source software, visit [percona.com](https://www.google.com/search?q=https://www.percona.com).*
+*For more information about Percona's open-source software, visit [percona.com](https://www.percona.com).*
