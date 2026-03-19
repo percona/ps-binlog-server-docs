@@ -1,6 +1,6 @@
 # Documentation Contributing Guide
 
-We welcome contributions from all users and the community. By contributing, you agree to the [Percona Community code of conduct](https://percona.community/contribute/coc/). Thank you for deciding to contribute and help us improve the [ProxySQL Admin documentation](https://docs.percona.com/proxysql-admin/).
+We welcome contributions from all users and the community. By contributing, you agree to the [Percona Community code of conduct](https://percona.community/contribute/coc/). Thank you for deciding to contribute and help us improve the [Percona Binary Log Server documentation](https://docs.percona.com/ps-binlog-server/).
 
 You can contribute to the documentation in the following ways:
 
@@ -40,7 +40,7 @@ To add a topic, navigate to the [Percona Product Documentation category](https:/
 
 Create a Jira ticket to report documentation issues or request changes. This method is useful for formal tracking or when you want the documentation team to handle the changes.
 
-1. Open the [ProxySQL Admin Jira project](https://jira.percona.com/projects/PSQLADM/issues) in your browser.
+1. Open the [Percona Server Jira project](https://jira.percona.com/projects/PS/issues) in your browser.
 
 2. Sign in (or create a Percona Jira account if you don't have one).
 
@@ -121,14 +121,14 @@ This option uses the [GitHub CLI (`gh`)](https://cli.github.com/) tool, which pr
 2. Fork the repository (if you haven't already):
 
     ```shell
-        gh repo fork percona/proxysql-admin-tool-doc
+        gh repo fork percona/ps-binlog-server-docs
     ```
 
 3. Clone your forked repository:
 
     ```shell
-        gh repo clone <your_github_name>/proxysql-admin-tool-doc
-        cd proxysql-admin-tool-doc
+        gh repo clone <your_github_name>/ps-binlog-server-docs
+        cd ps-binlog-server-docs
     ```
 
 4. Create a new branch for your changes:
@@ -175,18 +175,18 @@ This option is for users who are comfortable with [git](https://git-scm.com/) co
 2. Clone your forked repository to your machine:
 
     ```shell
-        git clone https://github.com/<your_github_name>/proxysql-admin-tool-doc.git
-        cd proxysql-admin-tool-doc
+        git clone https://github.com/<your_github_name>/ps-binlog-server-docs.git
+        cd ps-binlog-server-docs
     ```
 
     !!! note "SSH alternative"
     
-        If you have SSH keys set up with GitHub, you can use `git@github.com:<your_github_name>/proxysql-admin-tool-doc.git` instead.
+        If you have SSH keys set up with GitHub, you can use `git@github.com:<your_github_name>/ps-binlog-server-docs.git` instead.
 
 3. Add the upstream remote to track the original repository:
 
     ```shell
-        git remote add upstream https://github.com/percona/proxysql-admin-tool-doc.git
+        git remote add upstream https://github.com/percona/ps-binlog-server-docs.git
     ```
 
 4. Checkout the appropriate branch for the version you're working on (for example, `main` for the latest documentation) and pull the latest changes from upstream:
