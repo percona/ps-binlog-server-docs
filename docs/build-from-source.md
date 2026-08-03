@@ -4,19 +4,21 @@ Build from source when you need to compile, debug, package, or patch the binary 
 
 ## Build requirements
 
-You build the project with CMake and a supported compiler. The dependency versions in this section match the latest release tag, [`pbs-0.3.0`](https://github.com/Percona-Lab/percona-binlog-server/releases/tag/pbs-0.3.0). For other tags, check the upstream `CMakeLists.txt` for that tag.
+You build the project with CMake and a supported compiler. The dependency versions in this section match the latest release tag, [`pbs-0.4.1`](https://github.com/Percona-Lab/percona-binlog-server/releases/tag/pbs-0.4.1). For other tags, check the upstream `CMakeLists.txt` for that tag.
 
 You need the following dependencies:
 
 * CMake 3.20.0 or later (the Boost, AWS SDK, and main-application presets need 3.21.0 or later)
 
-* GCC 14 or Clang 19 (the only toolchains wired up as build presets at this tag)
+* GCC 14 or Clang 20 (the only toolchains wired up as build presets at this tag)
 
 * Boost 1.90.0 from the Boost Git repository (not the source tarball)
 
 * `libmysqlclient` 8.0.x, for connecting to MySQL or MySQL-compatible servers
 
 * libcurl 8.6.0 or later
+
+* OpenSSL (the `OpenSSL::Crypto` library used by storage encryption)
 
 * AWS SDK for C++ 1.11.774
 
@@ -32,7 +34,7 @@ cd ws
 Clone the upstream repository at the release tag that you want to build. Then create a local branch so the working tree is not in detached HEAD.
 
 ```bash
-git clone -b pbs-0.3.0 https://github.com/Percona-Lab/percona-binlog-server.git
+git clone -b pbs-0.4.1 https://github.com/Percona-Lab/percona-binlog-server.git
 cd percona-binlog-server
 git switch -c required_release
 cd ..
@@ -54,7 +56,7 @@ The following toolchains are supported:
 
 * `gcc14`
 
-* `clang19`
+* `clang20`
 
 Example:
 
@@ -105,4 +107,4 @@ Source project: [Percona Binary Log Server README](https://github.com/Percona-La
 
 ### Version pins and troubleshooting
 
-The upstream `CMakeLists.txt` pins exact Boost and AWS SDK versions through `find_package`. If your build fails because of a version mismatch, confirm that the source tree is at the tag that you intend to build (`git status` and `git describe --tags`) and use the branches and tags shown in the Boost and AWS SDK sections. The pins differ across release tags. For the active pins, check `CMakeLists.txt` at the tag you build (for example, [`pbs-0.3.0/CMakeLists.txt`](https://github.com/Percona-Lab/percona-binlog-server/blob/pbs-0.3.0/CMakeLists.txt)).
+The upstream `CMakeLists.txt` pins exact Boost and AWS SDK versions through `find_package`. If your build fails because of a version mismatch, confirm that the source tree is at the tag that you intend to build (`git status` and `git describe --tags`) and use the branches and tags shown in the Boost and AWS SDK sections. The pins differ across release tags. For the active pins, check `CMakeLists.txt` at the tag you build (for example, [`pbs-0.4.1/CMakeLists.txt`](https://github.com/Percona-Lab/percona-binlog-server/blob/pbs-0.4.1/CMakeLists.txt)).

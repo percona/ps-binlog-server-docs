@@ -2,16 +2,17 @@
 
 ## Documentation licensing
 
-Percona Server for MySQL documentation is (C)2009-2026 Percona LLC and/or its affiliates and is distributed under the [Creative Commons Attribution 4.0 International License :octicons-link-external-16:](https://creativecommons.org/licenses/by/4.0/).
+Percona Binary Log Server documentation is (C) 2026 Percona LLC and its affiliates.
+
+The documentation uses the [Creative Commons Attribution 4.0 International License :octicons-link-external-16:](https://creativecommons.org/licenses/by/4.0/).
 
 ## Software license
 
-Percona Server for MySQL is built upon MySQL from Oracle. Along with making our own
-modifications, we merge in changes from other sources such as community
-contributions and changes from MariaDB.
+Percona Binary Log Server uses version 2 of the GNU General Public License (GPLv2).
 
-The original SHOW USER/TABLE/INDEX statistics code came from Google.
+See the [LICENSE](https://github.com/Percona-Lab/percona-binlog-server/blob/main/LICENSE) file in the product repository.
 
 Percona does not require copyright assignment.
 
-See the COPYING files accompanying the software distribution.
+See the `COPYING` and `LICENSE` files included in the software distribution.
+
