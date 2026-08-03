@@ -1,60 +1,85 @@
 # Percona Binary Log Server documentation
 
-The repository contains the source files and resources for the documentation of the Percona Binary Log Server.
+This repository holds the source files for Percona Binary Log Server documentation.
 
-The Percona Binary Log Server is a command-line utility that serves as an enhanced version of `mysqlbinlog` in `--read-from-remote-server` mode. The utility acts as a replication client that can stream binary log events from remote Oracle MySQL or Percona Server for MySQL instances to both local filesystems and cloud storage, for example AWS S3.
+Percona Binary Log Server is a command-line utility.
 
-## Table of Contents
+The utility extends `mysqlbinlog` in `--read-from-remote-server` mode.
 
-* [About the Project](#about-the-project)
-* [How to Use These Docs](#how-to-use-these-docs)
-* [Documentation Structure](#documentation-structure)
+The utility acts as a replication client.
+
+The utility streams binary log events from remote Oracle MySQL or Percona Server for MySQL instances.
+
+The utility stores events on a local filesystem or in cloud storage such as Amazon Simple Storage Service (Amazon S3).
+
+## Table of contents
+
+* [About the project](#about-the-project)
+
+* [How to use these docs](#how-to-use-these-docs)
+
+* [Documentation structure](#documentation-structure)
+
 * [Contributing](#contributing)
+
 * [License](#license)
+
 * [Resources](#resources)
 
-## About the Project
+## About the project
 
-The Percona Binary Log Server provides a robust way to:
+Percona Binary Log Server supports the following tasks:
 
-* Stream & Archive: Fetch binary logs and store them locally or in S3.
-* Resume Operations: Automatically reconnect and resume from the last point of termination.
-* Search: Quickly find binlog files by Timestamp or GTID set.
-* Support Modern Standards: Built with C++20 and supports advanced MySQL replication features.
+* Fetch binary logs and store them locally or in Amazon S3
 
-The repository serves as the central hub for user guides, operational manuals, and developer documentation to help the community effectively deploy and manage the server.
+* Reconnect and continue from the last stored position after a stop or failure
 
-## How to Use These Docs
+* Find binlog files by timestamp or Global Transaction Identifier (GTID) set
 
-If you are looking for the software itself, please visit the [main repository](https://github.com/Percona-Lab/percona-binlog-server).
+* Use modern MySQL replication features
 
-The documentation is typically written in Markdown. You can browse the files directly here on GitHub or follow the links in our [Resources](#resources) section for rendered versions.
+The repository holds user guides, operations manuals, and developer documentation.
 
-## Documentation Structure
+## How to use these docs
 
-* `docs/`: Documentation source files, including user guides, architecture material, examples, and deployment guidance.
+For the software source code, see the [main repository](https://github.com/Percona-Lab/percona-binlog-server).
+
+The documentation uses Markdown.
+
+Browse the files on GitHub, or open the rendered docs from [Resources](#resources).
+
+## Documentation structure
+
+* `docs/`: Documentation source files
+
+* `docs/ssl-tls-connections.md`: Secure Sockets Layer (SSL) and Transport Layer Security (TLS) options for the MySQL replication connection
+
+* `docs/binlog-encryption.md`: Binlog storage encryption and keyring format
 
 ## Contributing
 
-We encourage contributions to improve the quality of our documentation! To contribute:
+To contribute documentation:
 
-1. Fork the repository.
-2. Create a new branch for your documentation updates.
-3. Submit a Pull Request (PR) describing your changes.
+1. Fork the repository
 
-Please review the [Contributing Guide](contributing.md) and the [Code of Conduct](code-of-conduct.md) before submitting changes.
+2. Create a branch for your changes
 
-If you find a bug in the documentation or have a feature request for the tool itself, please use the [Jira issue tracker](https://jira.percona.com) or the [GitHub Issues](https://github.com/Percona-Lab/percona-binlog-server/issues) page.
+3. Open a pull request (PR) that describes the changes
+
+Read the [Contributing Guide](contributing.md) and the [Code of Conduct](code-of-conduct.md) before you submit changes.
+
+To report a documentation bug or a product feature request, use the [Jira issue tracker](https://jira.percona.com) or [GitHub Issues](https://github.com/Percona-Lab/percona-binlog-server/issues).
 
 ## License
 
-Percona Binary Log Server documentation is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+Percona Binary Log Server documentation uses the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
 
 ## Resources
 
-* Main Repository: [Percona-Lab/percona-binlog-server](https://github.com/Percona-Lab/percona-binlog-server)
-* Community Forum: [Percona Community Forum](https://forums.percona.com/)
-* Blog Posts: [Percona Database Performance Blog](https://www.percona.com/blog)
+* Main repository: [Percona-Lab/percona-binlog-server](https://github.com/Percona-Lab/percona-binlog-server)
 
+* Community forum: [Percona Community Forum](https://forums.percona.com/)
 
-*For more information about Percona's open-source software, visit [percona.com](https://www.percona.com).*
+* Blog: [Percona Database Performance Blog](https://www.percona.com/blog)
+
+For more information about Percona open-source software, visit [percona.com](https://www.percona.com).

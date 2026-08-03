@@ -142,5 +142,9 @@ extra:
 
 nav:
   - Home: index.md
-  - get-help.md
+  - Security:
+      - SSL and TLS connections: ssl-tls-connections.md
+      - Binlog storage encryption: binlog-encryption.md
+  - Get help: get-help.md
+  - Copyright and licensing: copyright-and-licensing-information.md
 
