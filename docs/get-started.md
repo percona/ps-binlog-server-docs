@@ -66,7 +66,7 @@ For ongoing collection, use [pull](glossary.md#pull):
 
 For more detail, see:
 
-* [Core behavior](operational-behavior-reference.md) — transaction-safe writes, metadata, resume, graceful shutdown
+* [Core behavior](operational-behavior-reference.md) — transaction-safe writes, automatic storage recovery, metadata, resume, graceful shutdown
 
 * [Operations](operations.md) — logging, monitoring, and alerting for production
 

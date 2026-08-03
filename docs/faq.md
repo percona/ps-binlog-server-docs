@@ -64,7 +64,11 @@ See [Where the resume position is stored](operational-behavior-reference.md#wher
 
 ## How do I resume after stopping the server?
 
-A new run continues from the position where the previous run stopped. You do not need any extra steps. Stop the process gracefully with Ctrl+C or `kill <pid>`, so that buffered data is flushed. `kill -9` can leave recent data unwritten.
+A new run continues from the position where the previous run stopped. You do not need any extra steps. Stop the process gracefully with Ctrl+C or `kill <pid>`, so that buffered data is flushed. `kill -9` can leave recent data unwritten. The next start repairs leftover `*.tmp` objects and a size mismatch on the current binlog file. See [Automatic storage recovery](operational-behavior-reference.md#automatic-storage-recovery).
+
+## How do I enable binlog storage encryption?
+
+Set the top-level `keyring.uri` to a local `file://` keyring JSON file, then add `storage.encryption` with `format` `generic`, a `kek_id` that exists in that keyring, and a CTR data cipher such as `AES-256-CTR`. You can later omit `storage.encryption` so new files are written without encryption, but you must keep `keyring` while any retained file still has encryption metadata. See [Binlog storage encryption](binlog-encryption.md).
 
 ## What privilege does the connection user need?
 
