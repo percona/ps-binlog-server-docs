@@ -98,3 +98,19 @@ In an S3-compatible URI, the bucket name must be the first path segment. Credent
 S3 and S3-compatible object storage do not support append operations. Each checkpoint flush re-uploads the entire binlog object up to the current flush point. As a result, the total bytes transferred are greater than the final file size, and the total grows with the flush frequency. For example, a 1G binlog file that is flushed at `checkpoint_size: 256M` transfers `256M + 512M + 768M + 1024M = 2560M` in total.
 
 Tuning guidance belongs in the Explanation section. A dedicated page will cover the cost model, recommended ranges, and the trade-offs between `checkpoint_size` and `checkpoint_interval`.
+
+## Storage encryption
+
+Optional `storage.encryption` encrypts **new** binlog files and records per-file encryption envelopes for `file` or `s3` storage.
+
+Configure a local keyring with the top-level `keyring.uri` setting and a key-encryption key (KEK) in `storage.encryption.kek_id`.
+
+The data cipher (`storage.encryption.cipher`) must be a CTR mode cipher, for example `AES-256-CTR`.
+
+Keep `keyring` whenever storage already contains encrypted files, even if you omit `storage.encryption` for later files.
+
+Metadata, index files, and the keyring remain readable and sensitive.
+
+For cipher naming rules, keyring permissions, mixed encrypted and unencrypted files, and KEK rotation, see [Binlog storage encryption](binlog-encryption.md).
+
+Parameter definitions are in [Configuration reference](configuration-reference.md#storageencryption-optional).

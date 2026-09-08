@@ -22,7 +22,7 @@ The tool uses one configuration file and one process. Percona Binary Log Server 
 
 ### Transaction-safe writes
 
-Stored binlogs are the basis for recovery. A partial transaction in a stored file makes the file unusable for recovery. To prevent partial transactions, Percona Binary Log Server flushes data only at transaction boundaries. The tool can also verify event checksums with `replication.verify_checksum`. After a hard kill, storage remains consistent up to the last flushed transaction. For full details, see [Core behavior](operational-behavior-reference.md#transaction-atomicity-and-partial-writes).
+Stored binlogs are the basis for recovery. A partial transaction in a stored file makes the file unusable for recovery. To prevent partial transactions, Percona Binary Log Server flushes data only at transaction boundaries. The tool can also verify event checksums with `replication.verify_checksum`. After a hard kill, storage remains consistent up to the last flushed transaction. The next start repairs leftover `*.tmp` objects and a size mismatch on the current binlog file. For full details, see [Core behavior](operational-behavior-reference.md#transaction-atomicity-and-partial-writes) and [Automatic storage recovery](operational-behavior-reference.md#automatic-storage-recovery).
 
 ## Capabilities and operational caveats
 
@@ -69,7 +69,9 @@ For the [decision matrix](use-with-operators.md#decision-matrix), the risks of s
 
 * Purge a contiguous prefix of stored binlog files, with the current tail protected — see [`purge_binlogs`](command-reference.md#purge_binlogs)
 
-* Optional TLS and SSL for the connection to the server
+* Optional [TLS and SSL](ssl-tls-connections.md) for the connection to the server
+
+* Optional [binlog storage encryption](binlog-encryption.md) configuration and per-file encryption envelopes
 
 * Graceful shutdown that keeps storage transaction-consistent
 
@@ -85,9 +87,13 @@ Install and first run:
 
 Before production use, learn how storage stays consistent and how to run and observe the process:
 
-* [Core behavior](operational-behavior-reference.md) — transaction-safe writes, metadata files, resume, graceful shutdown, and network-failure/reconnect behavior
+* [Core behavior](operational-behavior-reference.md) — transaction-safe writes, automatic storage recovery, metadata files, resume, graceful shutdown, and network-failure/reconnect behavior
 
 * [Operations](operations.md) — logging, monitoring, and alerting in production
+
+* [SSL and TLS connections](ssl-tls-connections.md): Encrypt the replication connection to the source
+
+* [Binlog storage encryption](binlog-encryption.md): Keyring and encryption metadata for stored binlogs
 
 * [Using with Percona Operators](use-with-operators.md) — Run alongside Percona Operator for MySQL (PS or PXC). Covers how to connect to the primary and how to deploy in Kubernetes. The Explanation section describes how to archive binlogs to S3 or Google Cloud Storage (GCS) for PITR when the database Pod is gone or local storage is lost.
 

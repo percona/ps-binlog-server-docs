@@ -155,6 +155,9 @@ nav:
   - Get started with Percona Binary Log Server: get-started.md
   - Operations: operations.md
   - Using with Percona Operators: use-with-operators.md
+  - Security:
+    - SSL and TLS connections: ssl-tls-connections.md
+    - Binlog storage encryption: binlog-encryption.md
   - Reference:
     - Command reference: command-reference.md
     - Configuration reference: configuration-reference.md

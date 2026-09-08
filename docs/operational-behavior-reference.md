@@ -1,6 +1,6 @@
 # Core behavior
 
-This page is a reference for the following topics: transaction-safe writes, metadata, resume, graceful shutdown, reconnect logic, and the server's impact on the primary (memory, backpressure, and single-threaded flow). This page covers internal behavior and tuning, including timeouts, loops, and client-library details. This page is not an installation guide ([Install](install.md)) and is not a high-level mode summary ([Command Reference](command-reference.md)). Read this reference before you operate or recover production workloads when you need to know *how* the server implements `fetch` and `pull`.
+This page is a reference for the following topics: transaction-safe writes, automatic storage recovery, metadata, resume, graceful shutdown, reconnect logic, and the server's impact on the primary (memory, backpressure, and single-threaded flow). This page covers internal behavior and tuning, including timeouts, loops, and client-library details. This page is not an installation guide ([Install](install.md)) and is not a high-level mode summary ([Command Reference](command-reference.md)). Read this reference before you operate or recover production workloads when you need to know *how* the server implements `fetch` and `pull`.
 
 Percona Binary Log Server connects to a MySQL or MySQL-compatible server as a [replication client](glossary.md#replication-client), reads [binary log](glossary.md#binary-log) events, and writes them to [storage](glossary.md#storage).
 
@@ -20,9 +20,9 @@ How partial writes are prevented:
 
 * When `replication.verify_checksum` is enabled, the server verifies binlog event checksums before writing. The source controls the algorithm. The `binlog_checksum` variable defaults to `CRC32`; set the variable to `NONE` to disable checksums. The server verifies events with the same algorithm that the source uses. The application accepts only the two algorithms that the source exposes: `CRC32` and `NONE`. Before switching into replication, the client sets `@source_binlog_checksum` and `@master_binlog_checksum` to match `verify_checksum`. See `easymysql/connection.cpp` in [Percona-Lab/percona-binlog-server](https://github.com/Percona-Lab/percona-binlog-server). Verification detects corruption early and prevents the server from storing bad data.
 
-* This public reference does not describe every implementation detail, such as temporary files and write-ahead buffers. The guarantee is that the state visible on storage is always transaction-consistent. No partial transaction remains in a binlog file.
+* This public reference does not describe every implementation detail, such as write-ahead buffers. The guarantee is that flushed transactions remain complete. After a hard kill, leftover `*.tmp` objects and a size mismatch on the current binlog file are repaired at the next start. See [Automatic storage recovery](#automatic-storage-recovery).
 
-If the process is killed mid-stream, for example with `kill -9`, the last visible data on storage ends at the last flushed transaction boundary. Any in-progress transaction is discarded. The next run resumes from that safe position.
+If the process is killed mid-stream, for example with `kill -9`, the last flushed transaction remains complete. Any in-progress transaction is discarded. Temporary objects or a truncated current file can remain until the next start, when automatic recovery restores a consistent storage state. The next run resumes from that safe position.
 
 ## Where the resume position is stored
 
@@ -34,11 +34,39 @@ Where each piece lives (see `storage.hpp` / `storage.cpp` in [Percona-Lab/percon
 
 * List of binlog files. A single `binlog.index` file at the root lists the binlog file paths in order, one per line (for example, `./binlog.000001`). Lines always start with `./` and no subdirectories are allowed. The last line names the current file. The server uses the full list for validation.
 
-* Per-file metadata (resume position and search index). Each binlog file has a companion `.json` file. For example, `binlog.000001` has the companion file `binlog.000001.json`. The companion file holds the following fields: `version`, `size`, `previous_gtids`, `added_gtids`, `min_timestamp`, `max_timestamp`, and `last_sequence_number`. The `size` field is the flushed size in bytes and marks the byte where the next event would be written. In position-based replication mode, the resume position is the pair `(current binlog file name, byte position)`. The server reads the file name from the last line of `binlog.index`. The server reads the byte position from the `size` field of the companion JSON file. In GTID-based replication mode, the resume position is the GTID set `previous_gtids ∪ added_gtids`. The set is computed from the most recent file's companion JSON. The `size` field is not used for resume in this mode.
+* Per-file metadata (resume position and search index). Each binlog file has a companion `.json` file. For example, `binlog.000001` has the companion file `binlog.000001.json`. The companion file holds the following fields: `version`, `size`, `previous_gtids`, `added_gtids`, `min_timestamp`, `max_timestamp`, `last_sequence_number`, and optional `encryption`. The `size` field is the flushed size in bytes and marks the byte where the next event would be written. In position-based replication mode, the resume position is the pair `(current binlog file name, byte position)`. The server reads the file name from the last line of `binlog.index`. The server reads the byte position from the `size` field of the companion JSON file. In GTID-based replication mode, the resume position is the GTID set `previous_gtids ∪ added_gtids`. The set is computed from the most recent file's companion JSON. The `size` field is not used for resume in this mode.
 
 All of these objects pass through the same backend abstraction (`put_object` and `get_object`). On a file backend, the objects are plain files under `storage.uri`, such as `metadata.json`, `binlog.index`, `binlog.000001`, and `binlog.000001.json`. On an S3 or S3-compatible backend, the objects are stored under the same bucket and prefix as the binlog files. No state is kept only on the local host. With an S3 backend, the resume position is stored in S3.
 
 If the local server's SSD fails, a file backend loses both the state and the binlogs, unless you have another copy. An S3 backend keeps all data in the bucket. Configure a new instance with the same `storage.uri`. The new instance loads `metadata.json`, `binlog.index`, and every `*.json` file from S3, and then resumes from the saved position. You can rebuild the state from the S3 metadata and the binlog objects alone. You do not need a local SSD.
+
+## Automatic storage recovery
+
+When a previous process did not shut down cleanly, storage can contain leftover artifacts. At the next start, Percona Binary Log Server repairs those artifacts before it resumes.
+
+Leftover temporary objects:
+
+* The server looks for objects whose names end in `.tmp` (for example, `binlog.000001.tmp`).
+
+* For each such object, the server writes a `warning` message to the log.
+
+* In `fetch` and `pull` (streaming modes), the server deletes those temporary objects.
+
+* In other commands (`list`, `search_by_timestamp`, `search_by_gtid_set`, `purge_binlogs`), the server leaves the objects in place and does not treat them as binlog files.
+
+Size mismatch on the current binlog:
+
+* The server compares the actual size of the latest (current) binlog object with the `size` field in that file's sidecar metadata.
+
+* If the object is larger than the recorded `size`, the server truncates the object to the metadata size and writes a `warning` to the log.
+
+* On the `file` backend, truncate is a local resize.
+
+* On the `s3` backend, truncate downloads the object, truncates the local copy, and re-uploads the object.
+
+A forced stop can still drop unflushed transactions. Automatic recovery restores index and object consistency around the last flushed transaction. It does not reconstruct discarded in-progress work.
+
+See `storage.cpp` in [Percona-Lab/percona-binlog-server](https://github.com/Percona-Lab/percona-binlog-server).
 
 ## Metadata files (JSON schema and how to use them)
 
@@ -62,6 +90,8 @@ Each metadata file describes one binlog file. The binlog file name is encoded in
 
 * `last_sequence_number`: the `sequence_number` value of the last GTID-class event (`GTID_LOG`, `ANONYMOUS_GTID_LOG`, or `GTID_TAGGED_LOG`) written to this binlog file. The field is used internally to resume `replication.rewrite` correctly after restart, so that rewritten `sequence_number` and `last_committed` values stay monotonic across the restart boundary. The value is `0` when no qualifying GTID-class event has been written yet, or when storage was not created in GTID mode. The field is present in the on-disk `binlog.NNNNNN.json` file only; the `search_by_timestamp` and `search_by_gtid_set` JSON output does not expose it.
 
+* `encryption` (optional): per-file encryption envelopes when storage has encryption metadata. The object contains `file_key_envelope` and `file_data_envelope`. The field is present in the on-disk sidecar and in `list` / `search_by_timestamp` / `search_by_gtid_set` / `purge_binlogs` JSON output. Storage without encryption metadata omits the field. See [Binlog storage encryption](binlog-encryption.md).
+
 A non-empty `previous_gtids` on the first stored file means Percona Binary Log Server started after some events had been purged from the source. Those events are not in the archive. Point-in-time recovery from this archive cannot cover GTIDs that fall inside the first file's `previous_gtids`. To eliminate the gap, start Percona Binary Log Server before the source's `@@gtid_purged` advances past what you need to recover from. Alternatively, capture the purged window with a separate logical or physical backup.
 
 The `search_by_timestamp` and `search_by_gtid_set` JSON output reuses these per-file fields (except `version` and `last_sequence_number`) but also adds two fields that the on-disk file does not contain:
@@ -69,6 +99,8 @@ The `search_by_timestamp` and `search_by_gtid_set` JSON output reuses these per-
 * `name`: binlog file name (for example, `binlog.000001`)
 
 * `uri`: full storage URI of the binlog file (for example, `file:///var/lib/binlog-server/data/binlog.000001` or `s3://bucket/prefix/binlog.000001`)
+
+When present on disk, the optional `encryption` object is also included in that command JSON output.
 
 The search command output also wraps the per-file entries in a top-level object that carries its own `version`, a `status`, and a `result` array. See [Search, list, and purge response format](#search-list-and-purge-response-format).
 
@@ -115,7 +147,7 @@ kill <pid>
 
 Graceful shutdown keeps storage consistent. The server flushes buffered data and commits at a transaction boundary before the process exits.
 
-`kill -9` does not provide this safety. A forced stop can leave buffered data unwritten and can lose recent progress. Under systemd, set `TimeoutStopSec` long enough for a graceful flush. Use at least `connection.read_timeout` plus a few seconds. For example, set `TimeoutStopSec` to 90 or 120 seconds when `read_timeout` is 60. Otherwise, systemd may send `SIGKILL` before the process finishes flushing.
+`kill -9` does not provide this safety. A forced stop can leave buffered data unwritten and can lose recent progress. The next start runs [automatic storage recovery](#automatic-storage-recovery) for leftover `*.tmp` objects and a size mismatch on the current binlog file. Under systemd, set `TimeoutStopSec` long enough for a graceful flush. Use at least `connection.read_timeout` plus a few seconds. For example, set `TimeoutStopSec` to 90 or 120 seconds when `read_timeout` is 60. Otherwise, systemd may send `SIGKILL` before the process finishes flushing.
 
 `libmysqlclient` uses synchronous calls. As a result, the response to a stop signal can wait for:
 
@@ -307,3 +339,5 @@ A success or warning result usually contains a list of binlog file entries. Each
 * `previous_gtids`
 
 * `added_gtids`
+
+* `encryption` (optional; present when storage has encryption metadata)

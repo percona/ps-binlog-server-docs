@@ -56,7 +56,7 @@ Amazon Simple Storage Service, and services that use a compatible API. Percona B
 
 ### TLS and SSL
 
-Transport Layer Security (TLS) encrypts connections to the server. SSL (Secure Sockets Layer) is the older name. The two terms appear interchangeably in settings and documentation.
+Transport Layer Security (TLS) encrypts connections to the server. SSL (Secure Sockets Layer) is the older name. The two terms appear interchangeably in settings and documentation. Configure the replication connection with `connection.ssl` and `connection.tls`. See [SSL and TLS connections](ssl-tls-connections.md).
 
 ### URI
 
@@ -114,6 +114,14 @@ One or more GTIDs, or one or more GTID ranges. A GTID set is used to configure G
 
 A replication mode in which the server and the client track progress by GTID set, instead of by file name and byte position. GTID-based replication enables `search_by_gtid_set` and allows smoother failover and topology changes.
 
+### key-encryption key (KEK)
+
+A symmetric key in the local keyring that wraps per-file data-encryption keys in encryption metadata. When [binlog storage encryption](binlog-encryption.md) is configured for new files, set `storage.encryption.kek_id` to the ID of the active KEK. Keep older KEK records in the keyring while any retained binlog metadata still references those IDs.
+
+### keyring
+
+A local JSON file that stores encryption key material for binlog storage encryption. Point at the file with the optional top-level `keyring.uri` setting (scheme `file://` only). The keyring holds unique key IDs, cipher names, and key bytes (`data_hex`). The server validates cipher mode, `data_hex` length, and ID uniqueness at startup. Restrict filesystem permissions on the keyring directory and file. See [Binlog storage encryption](binlog-encryption.md#keyring-file-format) and [`keyring`](configuration-reference.md#keyring-optional).
+
 ### previous_gtids
 
 The GTID set that is already present at the start of a binary log file. The set carries over from the previous file. Both the per-file metadata JSON (for example, `binlog.000001.json`) and the `search_by_timestamp` and `search_by_gtid_set` JSON output use the key `previous_gtids`. The field is empty for storage not created in GTID mode. For the first stored file, this field is normally empty. If this field is non-empty, the source MySQL had a non-empty `@@gtid_purged` when Percona Binary Log Server started. The events corresponding to those purged GTIDs are not in the archive. Percona Binary Log Server writes this field automatically when each file is created. Manual edits to `previous_gtids` serve no operational purpose.
@@ -140,7 +148,7 @@ The configuration value `replication.idle_time`. The value sets, in seconds, the
 
 ### list
 
-The operation mode that is selected with the `list` command. The mode reads stored metadata and returns the metadata of every binlog file currently in storage, in chronological order. The output JSON uses the same per-file schema as `search_by_timestamp` and `search_by_gtid_set`. Unlike the search commands, `list` returns `status: success` with an empty `result` array on an empty storage. Use `list` to enumerate the archive without applying a filter, and to distinguish an empty storage from a corrupted one. See [`list` mode](operational-behavior-reference.md#list-mode) and [`list` in Command reference](command-reference.md#list).
+The operation mode that is selected with the `list` command. The mode reads stored metadata and returns the metadata of every binlog file currently in storage, in chronological order. The output JSON uses the same per-file schema as `search_by_timestamp` and `search_by_gtid_set`, including an optional `encryption` object when storage has encryption metadata. Unlike the search commands, `list` returns `status: success` with an empty `result` array on an empty storage. Use `list` to enumerate the archive without applying a filter, and to distinguish an empty storage from a corrupted one. See [`list` mode](operational-behavior-reference.md#list-mode) and [`list` in Command reference](command-reference.md#list).
 
 ### last_sequence_number
 
@@ -188,7 +196,17 @@ The numeric identifier that the replication client presents to the upstream serv
 
 ### storage
 
-The configuration section that defines where Percona Binary Log Server writes binlog files. The section contains the backend type and URI, and optional buffer directory and checkpoint settings.
+The configuration section that defines where Percona Binary Log Server writes binlog files. The section contains the backend type and URI, optional buffer directory and checkpoint settings, and optional [`storage.encryption`](configuration-reference.md#storageencryption-optional) for encrypting new files. Key material lives in the separate [`keyring`](#keyring) section.
+
+### storage encryption
+
+Optional configuration (`keyring` plus optional `storage.encryption`) that encrypts new binlog payloads and records per-file encryption envelopes in binlog metadata.
+
+You can omit `storage.encryption` so that later files are written without encryption, as long as `keyring` remains configured for files that already have envelopes.
+
+Storage encryption differs from [TLS and SSL](#tls-and-ssl), which protect the replication connection in transit.
+
+See [Binlog storage encryption](binlog-encryption.md).
 
 ### transaction boundary
 
