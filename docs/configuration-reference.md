@@ -1,12 +1,14 @@
 # Configuration reference
 
-Percona Binary Log Server uses a JSON configuration file with four top-level sections:
+Percona Binary Log Server uses a JSON configuration file with five top-level sections:
 
 * `logger`
 
 * `connection`
 
 * `replication`
+
+* `keyring` (optional)
 
 * `storage`
 
@@ -36,11 +38,11 @@ Every supported field appears in the template that follows. The binary expects p
       "crlpath": "/etc/mysql/ssl/crldir",
       "cert": "/etc/mysql/ssl/client-cert.pem",
       "key": "/etc/mysql/ssl/client-key.pem",
-      "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      "cipher": "<SSL_CIPHER_LIST>"
     },
     "tls": {                   // optional section
-      "ciphersuites": "TLS_AES_256_GCM_SHA384",  // TLS 1.3 ciphersuites
-      "version": "TLSv1.3"                        // allowed TLS versions
+      "ciphersuites": "<TLS_CIPHERSUITES>",  // TLS 1.3 ciphersuites
+      "version": "<TLS_VERSION>"             // allowed TLS versions
     }
   },
   "replication": {
@@ -53,19 +55,27 @@ Every supported field appears in the template that follows. The binary expects p
       "file_size": "128M"
     }
   },
+  "keyring": {                 // optional; required when storage already has encrypted files, or when storage.encryption is present
+    "uri": "file:///var/lib/pbs/keyring/keyring_data.json"
+  },
   "storage": {
     "backend": "file",         // required; file | s3
     "uri": "file:///var/lib/binlog-server/data",  // required
     "fs_buffer_directory": "/var/lib/binlog-server/buffer",  // optional; local staging directory for S3 uploads (used only on flush, not for unflushed events); when omitted, a UUID-named subdirectory under $TMPDIR (or /tmp on Linux when unset) is created and removed at clean shutdown
     "checkpoint_size": "128M",    // optional; flush after configured size threshold; 0 or omitted disables
-    "checkpoint_interval": "30s" // optional; flush when a new event is processed and the interval since the last flush has elapsed; 0 or omitted disables
+    "checkpoint_interval": "30s", // optional; flush when a new event is processed and the interval since the last flush has elapsed; 0 or omitted disables
+    "encryption": {            // optional section; omit to write new binlogs without encryption
+      "format": "generic",
+      "kek_id": "<KEK_ID>",
+      "cipher": "AES-256-CTR"
+    }
   }
 }
 ```
 
 Variable reference (production-ready template):
 
-The configuration schema has no built-in defaults. Every variable is either Required or Optional. A Required variable means the JSON key must be present. An Optional variable means you can omit the key. The values in the template and in the Example column are examples only. If you omit an Optional key, the example value is not used as a default. For the authoritative definitions, see the upstream headers `src/binsrv/logger_config.hpp`, `src/easymysql/connection_config.hpp`, `src/binsrv/replication_config.hpp`, `src/binsrv/rewrite_config.hpp`, and `src/binsrv/storage_config.hpp`.
+The configuration schema has no built-in defaults. Every variable is either Required or Optional. A Required variable means the JSON key must be present. An Optional variable means you can omit the key. The values in the template and in the Example column are examples only. If you omit an Optional key, the example value is not used as a default. For the authoritative definitions, see the upstream headers `src/binsrv/logger_config.hpp`, `src/easymysql/connection_config.hpp`, `src/binsrv/replication_config.hpp`, `src/binsrv/rewrite_config.hpp`, `src/binsrv/keyring_config.hpp`, `src/binsrv/encryption_config.hpp`, and `src/binsrv/storage_config.hpp`.
 
 | Section | Variable | Type | Required | Example | Description |
 |---------|----------|------|----------|---------|-------------|
@@ -87,10 +97,10 @@ The configuration schema has no built-in defaults. Every variable is either Requ
 | connection.ssl | `crlpath` | String | No | `/etc/mysql/crldir` | Path to directory of CRL files. |
 | connection.ssl | `cert` | String | No | `/etc/mysql/client-cert.pem` | Path to client certificate file. |
 | connection.ssl | `key` | String | No | `/etc/mysql/client-key.pem` | Path to client private key file. |
-| connection.ssl | `cipher` | String | No | `ECDHE-RSA-AES128-GCM-SHA256` | Allowed SSL cipher list. |
+| connection.ssl | `cipher` | String | No | `<SSL_CIPHER_LIST>` | Allowed SSL cipher list. |
 | connection.tls | (section) | Object | No | — | Optional section; omit the whole `tls` object when TLS 1.3 is not configured. |
-| connection.tls | `ciphersuites` | String | No | `TLS_AES_256_GCM_SHA384` | Allowed TLS 1.3 ciphersuites. |
-| connection.tls | `version` | String | No | `TLSv1.3` | Allowed TLS protocol versions. |
+| connection.tls | `ciphersuites` | String | No | `<TLS_CIPHERSUITES>` | Allowed TLS 1.3 ciphersuites. |
+| connection.tls | `version` | String | No | `<TLS_VERSION>` | Allowed TLS protocol versions. |
 | replication | `server_id` | Int | Yes | `42` | Replication client server ID (required by protocol). |
 | replication | `idle_time` | Int | Yes | `10` | Seconds to wait between reconnect attempts in `pull` mode. For tuning guidance, see [Best practice: idle_time](operational-behavior-reference.md#best-practice-idle_time). |
 | replication | `verify_checksum` | Boolean | Yes | `true` | When `true`, the client requests CRC32 and verifies event checksums; when `false`, the client requests NONE. Only CRC32 and NONE are supported (same as `binlog_checksum` on the source). See upstream `src/easymysql/connection.cpp`. |
@@ -98,11 +108,17 @@ The configuration schema has no built-in defaults. Every variable is either Requ
 | replication.rewrite | (section) | Object | No | — | Optional section; requires `replication.mode: gtid`. When the section is omitted, the utility writes binlog files using the source server's file names and rotation layout. |
 | replication.rewrite | `base_file_name` | String | Yes (within `rewrite`) | `binlog` | Base name for rewritten binlog files. |
 | replication.rewrite | `file_size` | String | Yes (within `rewrite`) | `128M` | Target size per rewritten file. |
+| keyring | (section) | Object | No | — | Optional section; required when storage already has encrypted files, or when `storage.encryption` is present. See [Binlog storage encryption](binlog-encryption.md). |
+| keyring | `uri` | String | Yes (within `keyring`) | `file:///var/lib/pbs/keyring/keyring_data.json` | URI of the keyring JSON file. The only supported scheme is `file://` on the local filesystem. |
 | storage | `backend` | String | Yes | `file` | `file` or `s3`. |
 | storage | `uri` | String | Yes | `file:///var/lib/binlog-server/data` | Storage URI; format depends on backend (see [Storage Reference](storage-reference.md)). |
 | storage | `fs_buffer_directory` | String | No | `/var/lib/binlog-server/buffer` | Local staging directory for S3 uploads (not the checkpointing buffer for unflushed events, which live in the in-memory event buffer). Data enters this directory only when a flush occurs: the server writes the flushed bytes to a UUID-named temporary file and immediately uploads the cumulative S3 object from that file. When omitted, the server creates a UUID-named subdirectory under the OS temporary directory (`$TMPDIR`, or `/tmp` on Linux when unset) and removes that subdirectory at clean shutdown. A `fs_buffer_directory` set explicitly is never deleted by the server. Set this field explicitly to choose a stable, predictable location. |
 | storage | `checkpoint_size` | String | No | `128M` | Flush after the configured byte threshold. When omitted or set to `0`, size-based checkpointing is disabled. |
 | storage | `checkpoint_interval` | String | No | `30s` | Time threshold that triggers a flush when a new event is processed. Evaluated only on event arrival; without incoming events the buffer is not flushed even after the interval elapses. When omitted or set to `0`, time-based checkpointing is disabled. |
+| storage.encryption | (section) | Object | No | — | Optional section; omit the whole `encryption` object to write new files without encryption. Keep `keyring` if existing files are encrypted. See [Binlog storage encryption](binlog-encryption.md). |
+| storage.encryption | `format` | String | Yes (within `encryption`) | `generic` | Encryption format. The only supported value is `generic`. |
+| storage.encryption | `kek_id` | String | Yes (within `encryption`) | — | ID of the key-encryption key (KEK) in the keyring. The ID must exist in the keyring file. |
+| storage.encryption | `cipher` | String | Yes (within `encryption`) | `AES-256-CTR` | Cipher name for binlog file data encryption. Must be a CTR mode cipher. |
 
 Full example (with optional SSL/TLS):
 
@@ -128,11 +144,11 @@ Full example (with optional SSL/TLS):
       "crlpath": "/etc/mysql/crldir",
       "cert": "/etc/mysql/client-cert.pem",
       "key": "/etc/mysql/client-key.pem",
-      "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      "cipher": "<SSL_CIPHER_LIST>"
     },
     "tls": {
-      "ciphersuites": "TLS_AES_256_GCM_SHA384",
-      "version": "TLSv1.3"
+      "ciphersuites": "<TLS_CIPHERSUITES>",
+      "version": "<TLS_VERSION>"
     }
   },
   "replication": {
@@ -140,6 +156,9 @@ Full example (with optional SSL/TLS):
     "idle_time": 10,
     "verify_checksum": true,
     "mode": "position"
+  },
+  "keyring": {
+    "uri": "file:///var/lib/pbs/keyring/keyring_data.json"
   },
   "storage": {
     "backend": "s3",
@@ -183,7 +202,7 @@ Severity notes:
 
 * `error`: caught exceptions and failure messages.
 
-* `warning`: reserved (no messages emitted at this level).
+* `warning`: storage recovery messages, for example leftover `*.tmp` objects or a size mismatch on the current binlog file. See [Automatic storage recovery](operational-behavior-reference.md#automatic-storage-recovery).
 
 * `info`: normal progress messages.
 
@@ -225,6 +244,8 @@ Do not use `localhost` for a TCP connection. `libmysqlclient` often treats `loca
 
 `connection.ssl` configures SSL for the client connection. The whole `ssl` section is optional, but when present, `mode` is required and the rest are optional.
 
+For configuration examples and recommended practices, see [SSL and TLS connections](ssl-tls-connections.md).
+
 Fields (Type; Required):
 
 * `mode`: String; required (when `ssl` is present). One of `disabled`, `preferred`, `required`, `verify_ca`, or `verify_identity`.
@@ -246,6 +267,8 @@ Fields (Type; Required):
 ## `connection.tls`
 
 `connection.tls` configures TLS 1.3. The JSON key for ciphersuites is `ciphersuites` (not `ca`). The whole `tls` section is optional.
+
+For configuration examples and recommended practices, see [SSL and TLS connections](ssl-tls-connections.md).
 
 Fields (Type; Required):
 
@@ -294,6 +317,30 @@ Fields (Type; Required):
 
 Defined in the upstream [replication_config.hpp](https://github.com/Percona-Lab/percona-binlog-server/blob/main/src/binsrv/replication_config.hpp) and [rewrite_config.hpp](https://github.com/Percona-Lab/percona-binlog-server/blob/main/src/binsrv/rewrite_config.hpp).
 
+## `keyring` (optional)
+
+`keyring` points at the local JSON file that holds encryption keys.
+
+The whole `keyring` section is optional.
+
+The section is required when storage already contains at least one encrypted binlog file, or when `storage.encryption` is present.
+
+Fields (Type; Required):
+
+* `uri`: String; required (when `keyring` is present). URI of the keyring JSON file. The only supported scheme is `file://` on the local filesystem.
+
+Example:
+
+```json
+"keyring": {
+  "uri": "file:///var/lib/pbs/keyring/keyring_data.json"
+}
+```
+
+Defined in the upstream [keyring_config.hpp](https://github.com/Percona-Lab/percona-binlog-server/blob/main/src/binsrv/keyring_config.hpp).
+
+For the keyring file format, permissions, and validation rules, see [Binlog storage encryption](binlog-encryption.md).
+
 ## `storage`
 
 `storage` defines where Percona Binary Log Server writes binlog files and how often the server flushes buffered data to that destination.
@@ -310,8 +357,46 @@ Fields (Type; Required):
 
 * `checkpoint_interval`: String; optional. Time threshold, since the last flush, that triggers a flush when a new event is processed. Accepts a string with an optional suffix, for example `30s` or `5m`. The threshold is evaluated only on event arrival; if no new events are received, the buffer is not flushed even after the interval elapses. Omit the key, or set the value to `0`, to disable time-based checkpointing.
 
+* `encryption`: Object; optional. When present, encrypts **new** binlog files and records per-file encryption envelopes. Omit the section to write new files without encryption. Keep [`keyring`](#keyring-optional) if existing files still have encryption metadata. See [`storage.encryption`](#storageencryption-optional) and [Binlog storage encryption](binlog-encryption.md).
+
 Backend values:
 
 * `file`: local filesystem storage. The tool writes binlog files directly to the path in `uri`. The `fs_buffer_directory` and checkpoint settings are not required for correctness. Checkpoints can still reduce memory use during large writes.
 
 * `s3`: Amazon S3 or S3-compatible storage, for example MinIO. The tool buffers binlog data locally and then uploads the data according to `checkpoint_size` and `checkpoint_interval`. S3 does not support append, so each flush re-uploads the full object. See [S3 checkpointing behavior](storage-reference.md#s3-checkpointing-behavior) in Storage Reference.
+
+## `storage.encryption` (optional)
+
+`storage.encryption` configures encryption for **new** binlog files and the per-file encryption envelopes those files receive.
+
+The whole `encryption` section is optional.
+
+When the section is present, all three fields are required, and `keyring` must also be present.
+
+The section applies to both `file` and `s3` backends.
+
+Storage encryption settings differ from [TLS for the MySQL connection](ssl-tls-connections.md).
+
+For keyring format, mixed encrypted and unencrypted files, and KEK rotation, see [Binlog storage encryption](binlog-encryption.md).
+
+Fields (Type; Required):
+
+* `format`: String; required (when `encryption` is present). Encryption format. The only supported value is `generic`.
+
+* `kek_id`: String; required (when `encryption` is present). ID of the key-encryption key (KEK) in the keyring. The ID must exist in the keyring file.
+
+* `cipher`: String; required (when `encryption` is present). Cipher name for binlog file data encryption. Must be a CTR mode cipher, for example `AES-256-CTR`. Configuration validation rejects other modes.
+
+Example:
+
+```json
+"encryption": {
+  "format": "generic",
+  "kek_id": "<KEK_ID>",
+  "cipher": "AES-256-CTR"
+}
+```
+
+Omit `storage.encryption` when new files must be written without encryption.
+
+Keep `keyring` when existing files in that storage still have encryption metadata.

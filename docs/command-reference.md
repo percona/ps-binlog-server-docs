@@ -58,7 +58,7 @@ Example:
 Example output:
 
 ```text
-0.3.0
+0.4.1
 ```
 
 ## `fetch`
@@ -178,7 +178,7 @@ Possible error messages include:
 
 ## `list`
 
-`list` reads stored metadata and returns every binlog file currently in storage, in chronological order. The output JSON uses the same per-file schema as `search_by_timestamp` and `search_by_gtid_set` (`name`, `size`, `uri`, `previous_gtids`, `added_gtids`, `min_timestamp`, `max_timestamp`). Unlike the search commands, `list` returns `status: success` with an empty `result` array on an empty storage instead of returning an error. Use `list` to enumerate the archive without applying a filter, and to distinguish an empty storage from a corrupted one.
+`list` reads stored metadata and returns every binlog file currently in storage, in chronological order. The output JSON uses the same per-file schema as `search_by_timestamp` and `search_by_gtid_set` (`name`, `size`, `uri`, `previous_gtids`, `added_gtids`, `min_timestamp`, `max_timestamp`, and optional `encryption`). Unlike the search commands, `list` returns `status: success` with an empty `result` array on an empty storage instead of returning an error. Use `list` to enumerate the archive without applying a filter, and to distinguish an empty storage from a corrupted one.
 
 `list` opens storage in querying-only mode. The command does not write to storage, does not block other readers, and is safe to run while a `fetch` or `pull` process is active.
 
@@ -226,6 +226,31 @@ Example empty-storage output:
 ```
 
 The `previous_gtids` and `added_gtids` fields are emitted as empty strings on storage created in position-based replication mode.
+
+When storage has encryption metadata, each per-file entry also includes an optional `encryption` object.
+
+That object matches the sidecar metadata shape (`file_key_envelope` and `file_data_envelope`).
+
+Storage without encryption metadata omits the field.
+
+See [Binlog storage encryption](binlog-encryption.md#command-json-output).
+
+Example per-file `encryption` fragment:
+
+```json
+"encryption": {
+  "file_key_envelope": {
+    "kek_id": "<KEK_ID>",
+    "data_hex": "<WRAPPED_FILE_KEY_HEX>",
+    "iv_hex": "<IV_HEX>",
+    "tag_hex": "<TAG_HEX>"
+  },
+  "file_data_envelope": {
+    "cipher": "AES-256-CTR",
+    "iv_hex": "<IV_HEX>"
+  }
+}
+```
 
 ## `purge_binlogs`
 

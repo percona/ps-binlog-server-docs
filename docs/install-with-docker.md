@@ -56,14 +56,14 @@ The default value is 2,592,000 seconds (30 days). If you shorten this value, mak
 
 ## Image
 
-The image is published on Docker Hub as [`perconalab/percona-binlog-server`](https://hub.docker.com/r/perconalab/percona-binlog-server). You can pull the `latest` tag, a major-minor tag (for example, `0.3`), or an exact patch tag (for example, `0.3.0`). Multi-architecture manifests cover both `amd64` and `arm64`.
+The image is published on Docker Hub as [`perconalab/percona-binlog-server`](https://hub.docker.com/r/perconalab/percona-binlog-server). You can pull the `latest` tag, a major-minor tag (for example, `0.4`), or an exact patch tag (for example, `0.4.1`). Multi-architecture manifests cover both `amd64` and `arm64`.
 
 ```bash
 docker pull perconalab/percona-binlog-server:latest
 ```
 
 ```bash
-docker pull perconalab/percona-binlog-server:0.3.0
+docker pull perconalab/percona-binlog-server:0.4.1
 ```
 
 ## In-container paths used in this page
@@ -77,6 +77,7 @@ The examples in this section assume the in-container paths listed here. The path
 | S3 buffer directory | `/var/lib/binlog-server/buffer` | `storage.fs_buffer_directory` |
 | Log file | `/var/log/binlog-server/binsrv.log` | `logger.file` |
 | TLS/SSL certificates | `/etc/mysql/ssl/` | `connection.ssl.ca`, `cert`, `key`, and so on |
+| Keyring JSON file | `/var/lib/pbs/keyring/keyring_data.json` | `keyring.uri = file:///var/lib/pbs/keyring/keyring_data.json` |
 
 ## Container user and host volume ownership
 
@@ -127,7 +128,7 @@ docker run -d --name binlog-server \
   -v "$(pwd)/config.json:/etc/binlog-server/config.json:ro" \
   -v /srv/binlogs:/var/lib/binlog-server/data \
   -v /var/log/binlog-server:/var/log/binlog-server \
-  perconalab/percona-binlog-server:0.3.0 \
+  perconalab/percona-binlog-server:0.4.1 \
   binlog_server pull /etc/binlog-server/config.json
 ```
 
@@ -196,7 +197,11 @@ docker run -d --name binlog-server \
   binlog_server pull /etc/binlog-server/config.json
 ```
 
-The `connection.ssl.ca`, `connection.ssl.cert`, `connection.ssl.key`, and related fields must point to paths under `/etc/mysql/ssl/`, or under whichever directory you use as the mount point for your certificates. See [`connection.ssl`](configuration-reference.md#connectionssl).
+The `connection.ssl.ca`, `connection.ssl.cert`, `connection.ssl.key`, and related fields must point to paths under `/etc/mysql/ssl/`, or under whichever directory you use as the mount point for your certificates. See [`connection.ssl`](configuration-reference.md#connectionssl) and [SSL and TLS connections](ssl-tls-connections.md).
+
+To use storage encryption inside the container, mount a keyring file, set `keyring.uri` to that path, and set `storage.encryption` when new files must be encrypted.
+
+See [Binlog storage encryption](binlog-encryption.md).
 
 ## Networking
 
@@ -232,7 +237,7 @@ When `logger.file` is a path such as `/var/log/binlog-server/binsrv.log`, the to
 Pull the target tag, stop and remove the container, and then start the container again with the same volumes and command. The subsequent run uses the storage metadata to continue from the position where the previous run stopped.
 
 ```bash
-docker pull perconalab/percona-binlog-server:0.3.0
+docker pull perconalab/percona-binlog-server:0.4.1
 docker stop binlog-server
 docker rm binlog-server
 docker run -d --name binlog-server \
@@ -242,7 +247,7 @@ docker run -d --name binlog-server \
   -v "$(pwd)/config.json:/etc/binlog-server/config.json:ro" \
   -v /srv/binlogs:/var/lib/binlog-server/data \
   -v /var/log/binlog-server:/var/log/binlog-server \
-  perconalab/percona-binlog-server:0.3.0 \
+  perconalab/percona-binlog-server:0.4.1 \
   binlog_server pull /etc/binlog-server/config.json
 ```
 
@@ -255,7 +260,7 @@ AWS credentials must live inside `config.json` (in `storage.uri`) — see the pr
 ```yaml
 services:
   binlog-server:
-    image: perconalab/percona-binlog-server:0.3.0
+    image: perconalab/percona-binlog-server:0.4.1
     command: ["binlog_server", "pull", "/etc/binlog-server/config.json"]
     restart: unless-stopped
     stop_signal: SIGTERM
